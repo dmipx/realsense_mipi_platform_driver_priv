@@ -1,19 +1,19 @@
-From 9daa2d13ddc895df8f697037a8ec9a0d56a826c6 Mon Sep 17 00:00:00 2001
-From: Nael Masalha <nael.masalha@intel.com>
-Date: Tue, 17 Dec 2019 19:46:30 +0200
+From fd5072bcefdd2a4dadd0d0361910fb0a992d6055 Mon Sep 17 00:00:00 2001
+From: Emil Jahshan <emil.jahshan@intel.com>
+Date: Thu, 7 Oct 2021 11:59:46 +0300
 Subject: [PATCH] d4xx: Add support of Y8 and Y12I formats
 
  - Y8 and Y12I are exposed on the same node of Z16
  - Remove res 2000x1500 from YUYV format
 
-Signed-off-by: Nael Masalha <nael.masalha@intel.com>
+Signed-off-by: Emil Jahshan <emil.jahshan@intel.com>
 ---
- drivers/media/i2c/d4xx.c                           | 100 ++++++++-------------
- .../media/platform/tegra/camera/vi/vi4_formats.h   |   4 +-
- 2 files changed, 39 insertions(+), 65 deletions(-)
+ drivers/media/i2c/d4xx.c                      | 102 +++++++-----------
+ .../platform/tegra/camera/vi/vi4_formats.h    |   4 +-
+ 2 files changed, 40 insertions(+), 66 deletions(-)
 
 diff --git a/drivers/media/i2c/d4xx.c b/drivers/media/i2c/d4xx.c
-index ebf983c..78b3941 100644
+index aca8b3527..f55d29788 100644
 --- a/drivers/media/i2c/d4xx.c
 +++ b/drivers/media/i2c/d4xx.c
 @@ -483,11 +483,6 @@ static const struct ds5_resolution ds5_rgb_sizes[] = {
@@ -102,7 +102,7 @@ index ebf983c..78b3941 100644
 -};
 -
 -static struct ds5_format ds5_y_formats_asr[] = {
- 	{
+-	{
 -		.data_type = 0x1e,	/* UYVY */
 -		.mbus_code = MEDIA_BUS_FMT_UYVY8_2X8,
 -		.n_resolutions = ARRAY_SIZE(ds5_sizes),
@@ -113,10 +113,11 @@ index ebf983c..78b3941 100644
 -static const struct ds5_format ds5_y_formats_awg[] = {
 -	{
 -		.data_type = 0x1e,	/* UYVY */
--		.mbus_code = MEDIA_BUS_FMT_UYVY8_2X8,
+-		.mbus_code = MEDIA_BUS_FMT_YUYV8_1X16,
 -		.n_resolutions = ARRAY_SIZE(ds5_sizes),
 -		.resolutions = ds5_sizes,
 -	}, {
++	{	
 +		/* First format: default */
  		.data_type = 0x2a,	/* Y8 */
  		.mbus_code = MEDIA_BUS_FMT_Y8_1X8,
@@ -173,7 +174,7 @@ index ebf983c..78b3941 100644
  
  		ret = ds5_write(state, DS5_DEPTH_Y_FPS, depth->config.framerate);
  		if (ret < 0)
-@@ -2529,7 +2503,7 @@ static int ds5_fixed_configuration(struct i2c_client *client, struct ds5 *state)
+@@ -2530,7 +2504,7 @@ static int ds5_fixed_configuration(struct i2c_client *client, struct ds5 *state)
  	default:
  		sensor->formats = ds5_depth_formats_d46x;
  	}
@@ -183,16 +184,18 @@ index ebf983c..78b3941 100644
  
  	sensor = &state->motion_t.sensor;
 @@ -3128,4 +3102,4 @@ module_i2c_driver(ds5_i2c_driver);
+ 
  MODULE_DESCRIPTION("Intel D4XX camera driver");
  MODULE_AUTHOR("Guennadi Liakhovetski (guennadi.liakhovetski@intel.com)");
- MODULE_LICENSE("GPL v2");
 -MODULE_VERSION("0.49.4.0");
+\ No newline at end of file
 +MODULE_VERSION("0.51.1.0");
+\ No newline at end of file
 diff --git a/drivers/media/platform/tegra/camera/vi/vi4_formats.h b/drivers/media/platform/tegra/camera/vi/vi4_formats.h
-index ab90aae..6f8b1fa 100644
+index 6c2639a0a..d5412d6f1 100644
 --- a/drivers/media/platform/tegra/camera/vi/vi4_formats.h
 +++ b/drivers/media/platform/tegra/camera/vi/vi4_formats.h
-@@ -120,8 +120,8 @@ static const struct tegra_video_format vi4_video_formats[] = {
+@@ -119,8 +119,8 @@ static const struct tegra_video_format vi4_video_formats[] = {
  				RAW12, SBGGR12, "BGBG.. GRGR.."),
  
  	/* RGB888 */
@@ -204,5 +207,5 @@ index ab90aae..6f8b1fa 100644
  				RGB888, RGB32, "RGB-8-8-8-8"),
  
 -- 
-2.7.4
+2.17.1
 

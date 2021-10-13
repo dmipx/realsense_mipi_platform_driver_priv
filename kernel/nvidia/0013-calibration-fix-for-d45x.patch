@@ -1,30 +1,17 @@
-From e8ea3ca289725f3d9142dccb17d56ef63f393171 Mon Sep 17 00:00:00 2001
+From 52730f2abc3d727fb9b31b361690d4f69a126f90 Mon Sep 17 00:00:00 2001
 From: Emil Jahshan <emil.jahshan@intel.com>
-Date: Wed, 18 Aug 2021 13:25:35 +0300
+Date: Thu, 7 Oct 2021 15:05:05 +0300
 Subject: [PATCH] calibration fix for d45x
 
 Signed-off-by: Emil Jahshan <emil.jahshan@intel.com>
 ---
- drivers/media/i2c/d4xx.c | 32 +++++++++++++++-----------------
- 1 file changed, 15 insertions(+), 17 deletions(-)
+ drivers/media/i2c/d4xx.c | 20 +++++++++-----------
+ 1 file changed, 9 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/media/i2c/d4xx.c b/drivers/media/i2c/d4xx.c
-index 16f3de7c7..df56e3d26 100644
+index 443ea62f0..2105f44c2 100644
 --- a/drivers/media/i2c/d4xx.c
 +++ b/drivers/media/i2c/d4xx.c
-@@ -45,9 +45,9 @@
- #define DS5_FW_VERSION			0x030C
- #define DS5_FW_BUILD			0x030E
- #define DS5_DEVICE_TYPE			0x0310
--#define DS5_DEVICE_TYPE_D45X        6
--#define DS5_DEVICE_TYPE_D43X		5
--#define DS5_DEVICE_TYPE_D46X		4
-+	#define DS5_DEVICE_TYPE_D45X		6
-+	#define DS5_DEVICE_TYPE_D43X		5
-+	#define DS5_DEVICE_TYPE_D46X		4
- #define DS5_DEPTH_Y_STREAMS_DT		0x4000
- #define DS5_DEPTH_Y_STREAMS_MD		0x4002
- #define DS5_DEPTH_RES_WIDTH		0x4004
 @@ -515,7 +515,7 @@ static const struct ds5_resolution ds5_sizes[] = {
  };
  
@@ -64,16 +51,16 @@ index 16f3de7c7..df56e3d26 100644
  
  	// TODO: this prevents setting of manual exposure
  	// v4l2_ctrl_auto_cluster(3, &ctrls->auto_exp, 0, false);
-@@ -2599,7 +2596,7 @@ static int ds5_fixed_configuration(struct i2c_client *client, struct ds5 *state)
+@@ -2600,7 +2597,7 @@ static int ds5_fixed_configuration(struct i2c_client *client, struct ds5 *state)
  	sensor = &state->depth.sensor;
  	switch (dev_type) {
  	case DS5_DEVICE_TYPE_D43X:
--    case DS5_DEVICE_TYPE_D45X: // TODO: add d45x formats struct
+-	case DS5_DEVICE_TYPE_D45X: // TODO: add d45x formats struct
 +	case DS5_DEVICE_TYPE_D45X:
  		sensor->formats = ds5_depth_formats_d43x;
  		break;
  	case DS5_DEVICE_TYPE_D46X:
-@@ -2616,6 +2613,7 @@ static int ds5_fixed_configuration(struct i2c_client *client, struct ds5 *state)
+@@ -2617,6 +2614,7 @@ static int ds5_fixed_configuration(struct i2c_client *client, struct ds5 *state)
  	sensor->n_formats = state->variant->n_formats;
  	sensor->mux_pad = DS5_MUX_PAD_MOTION_T;
  	switch (dev_type) {
@@ -81,12 +68,9 @@ index 16f3de7c7..df56e3d26 100644
  	case DS5_DEVICE_TYPE_D43X: {
  		unsigned int *calib_resolutions_size = (unsigned int *)&(sensor->formats[ARRAY_SIZE(ds5_y_formats_ds5u)-1].n_resolutions);
  		const struct ds5_resolution** calib_resolutions = (const struct ds5_resolution**)
-@@ -2636,21 +2634,21 @@ static int ds5_fixed_configuration(struct i2c_client *client, struct ds5 *state)
- 	}
- 
+@@ -2639,9 +2637,9 @@ static int ds5_fixed_configuration(struct i2c_client *client, struct ds5 *state)
  	sensor = &state->rgb.sensor;
--    switch (dev_type) {
-+	switch (dev_type) {
+ 	switch (dev_type) {
  	case DS5_DEVICE_TYPE_D43X:
 -    case DS5_DEVICE_TYPE_D46X:
 +	case DS5_DEVICE_TYPE_D46X:
@@ -96,8 +80,7 @@ index 16f3de7c7..df56e3d26 100644
  		break;
  	case DS5_DEVICE_TYPE_D45X:
  		sensor->formats = &ds5_rlt_rgb_format;
--        sensor->n_formats = DS5_RLT_RGB_N_FORMATS;
-+		sensor->n_formats = DS5_RLT_RGB_N_FORMATS;
+@@ -2649,9 +2647,9 @@ static int ds5_fixed_configuration(struct i2c_client *client, struct ds5 *state)
  		break;
  	default:
  		sensor->formats = &ds5_onsemi_rgb_format;
@@ -109,15 +92,6 @@ index 16f3de7c7..df56e3d26 100644
  
  	/*sensor->formats = &ds5_onsemi_rgb_format;
  	sensor->n_formats = DS5_RGB_N_FORMATS;
-@@ -3119,7 +3117,7 @@ static int ds5_probe(struct i2c_client *c, const struct i2c_device_id *id)
- 
- 
- 	state->client = c;
--    dev_warn(&c->dev, "Probing new driver for D45x\n");
-+	dev_warn(&c->dev, "Probing new driver for D45x\n");
- 	dev_warn(&c->dev, "Driver data NAEL %d\n", (int)id->driver_data);
- 	state->variant = ds5_variants + id->driver_data;
- 
 -- 
 2.17.1
 

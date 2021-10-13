@@ -1,30 +1,20 @@
-From e1bf5c8bec2ef20ca71c9fcc52523d903e7cfe1d Mon Sep 17 00:00:00 2001
-From: Nael Masalha <nael.masalha@intel.com>
-Date: Sun, 19 Jan 2020 16:28:49 +0200
+From 76e5068a2c7a03677af3409bddfdef9869792f4d Mon Sep 17 00:00:00 2001
+From: Emil Jahshan <emil.jahshan@intel.com>
+Date: Thu, 7 Oct 2021 13:12:00 +0300
 Subject: [PATCH] d4xx: enable d4xx on Xavier, kernel 4.9
 
-Signed-off-by: Nael Masalha <nael.masalha@intel.com>
+Signed-off-by: Emil Jahshan <emil.jahshan@intel.com>
 ---
- drivers/media/i2c/d4xx.c                           | 113 ++++++++++++---------
- .../media/platform/tegra/camera/vi/vi5_formats.h   |  23 +++--
- drivers/video/tegra/camera/tegra_camera_platform.c |   5 +
- 3 files changed, 85 insertions(+), 56 deletions(-)
+ drivers/media/i2c/d4xx.c                      | 110 ++++++++++--------
+ .../platform/tegra/camera/vi/vi5_formats.h    |  23 +++-
+ .../tegra/camera/tegra_camera_platform.c      |   5 +
+ 3 files changed, 83 insertions(+), 55 deletions(-)
 
 diff --git a/drivers/media/i2c/d4xx.c b/drivers/media/i2c/d4xx.c
-index 2156d8e..c7c56b6 100644
+index 284cd5fda..321a29eb4 100644
 --- a/drivers/media/i2c/d4xx.c
 +++ b/drivers/media/i2c/d4xx.c
-@@ -736,7 +736,8 @@ static int ds5_sensor_get_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_pad_con
- 	mutex_unlock(&state->lock);
- 
- 	dev_info(sd->dev, "%s(): pad %x, code %x, res %ux%u\n", __func__, fmt->pad, fmt->format.code,
--		 fmt->format.width, fmt->format.height);
-+	        fmt->format.width, fmt->format.height);
-+
- 
- 	return 0;
- }
-@@ -832,10 +833,10 @@ static int ds5_sensor_set_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_pad_con
+@@ -832,10 +832,10 @@ static int ds5_sensor_set_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_pad_con
  static int ds5_configure(struct ds5 *state)
  {
  	/*const*/ struct ds5_sensor *depth = &state->depth.sensor;
@@ -37,7 +27,7 @@ index 2156d8e..c7c56b6 100644
  	u8 rgbfmt = rgb->streaming ? rgb->config.format->data_type : 0;
  	int ret;
  
-@@ -843,6 +844,15 @@ static int ds5_configure(struct ds5 *state)
+@@ -843,6 +843,15 @@ static int ds5_configure(struct ds5 *state)
  	if (!dfmt && !mfmt && !rgbfmt)
  		return -EINVAL;
  
@@ -53,7 +43,7 @@ index 2156d8e..c7c56b6 100644
  	ret = ds5_write(state, DS5_DEPTH_Y_STREAMS_DT, dfmt | (mfmt << 8));
  	if (ret < 0)
  		return ret;
-@@ -851,7 +861,7 @@ static int ds5_configure(struct ds5 *state)
+@@ -851,7 +860,7 @@ static int ds5_configure(struct ds5 *state)
  	if (ret < 0)
  		return ret;
  
@@ -62,7 +52,7 @@ index 2156d8e..c7c56b6 100644
  		// TODO: remove if 0x31 DT is supported
  		//       this will configure FW to override DT in mipi header to
  		//       0x1E for depth, since DT 0x31 is not supported
-@@ -879,16 +889,17 @@ static int ds5_configure(struct ds5 *state)
+@@ -879,16 +888,17 @@ static int ds5_configure(struct ds5 *state)
  			return ret;
  	}
  
@@ -84,7 +74,7 @@ index 2156d8e..c7c56b6 100644
  		if (ret < 0)
  			return ret;
  	}
-@@ -1862,12 +1873,12 @@ static int ds5_depth_init(struct i2c_client *c, struct ds5 *state)
+@@ -1862,12 +1872,12 @@ static int ds5_depth_init(struct i2c_client *c, struct ds5 *state)
  			       &ds5_depth_subdev_ops, "depth");
  }
  
@@ -99,7 +89,7 @@ index 2156d8e..c7c56b6 100644
  
  static int ds5_rgb_init(struct i2c_client *c, struct ds5 *state)
  {
-@@ -1897,21 +1908,20 @@ static int ds5_mux_enum_mbus_code(struct v4l2_subdev *sd,
+@@ -1897,21 +1907,20 @@ static int ds5_mux_enum_mbus_code(struct v4l2_subdev *sd,
  		remote_sd = &state->rgb.sensor.sd;
  		break;
  	case DS5_MUX_PAD_EXTERNAL:
@@ -126,7 +116,7 @@ index 2156d8e..c7c56b6 100644
  
  		break;
  	default:
-@@ -1965,15 +1975,15 @@ static int ds5_mux_enum_frame_size(struct v4l2_subdev *sd,
+@@ -1965,15 +1974,15 @@ static int ds5_mux_enum_frame_size(struct v4l2_subdev *sd,
  		 * Assume, that different sensors don't support the same formats
  		 * Try the Depth sensor first, then the Motion Tracker
  		 */
@@ -151,7 +141,7 @@ index 2156d8e..c7c56b6 100644
  		break;
  	default:
  		return -EINVAL;
-@@ -2068,10 +2078,12 @@ static int ds5_mux_set_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config
+@@ -2069,10 +2078,12 @@ static int ds5_mux_set_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config
  	int ret = 0;
  
  	if (!state->is_rgb)
@@ -166,7 +156,7 @@ index 2156d8e..c7c56b6 100644
  	else
  		pad = DS5_MUX_PAD_RGB;
  
-@@ -2126,7 +2138,7 @@ static int ds5_mux_get_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config
+@@ -2127,7 +2138,7 @@ static int ds5_mux_get_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config
  		tmp.pad = DS5_MUX_PAD_RGB;
  		pad = DS5_MUX_PAD_RGB;
  	} else
@@ -175,7 +165,7 @@ index 2156d8e..c7c56b6 100644
  
  	switch (pad) {
  	case DS5_MUX_PAD_MOTION_T:
-@@ -2148,10 +2160,10 @@ static int ds5_mux_get_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config
+@@ -2149,10 +2160,10 @@ static int ds5_mux_get_fmt(struct v4l2_subdev *sd, struct v4l2_subdev_pad_config
  
  	/* Locks internally */
  	ret = ds5_sensor_get_fmt(remote_sd, cfg, &tmp);
@@ -190,7 +180,7 @@ index 2156d8e..c7c56b6 100644
  
  	return ret;
  }
-@@ -2167,14 +2179,16 @@ static int ds5_mux_g_frame_interval(struct v4l2_subdev *sd,
+@@ -2168,14 +2179,16 @@ static int ds5_mux_g_frame_interval(struct v4l2_subdev *sd,
  	if (NULL == sd || NULL == fi)
  		return -EINVAL;
  
@@ -203,7 +193,7 @@ index 2156d8e..c7c56b6 100644
  		fi->interval.denominator = rgb->config.framerate;
 -	else
 +	} else {
-+	    dev_info(sd->dev, "%s(): depth %d \n", __func__, depth->config.framerate);
++		dev_info(sd->dev, "%s(): depth %d \n", __func__, depth->config.framerate);
  		fi->interval.denominator = depth->config.framerate;
 +	}
  
@@ -211,7 +201,7 @@ index 2156d8e..c7c56b6 100644
  	return 0;
  }
  
-@@ -2328,18 +2342,18 @@ static int ds5_mux_registered(struct v4l2_subdev *sd)
+@@ -2329,18 +2342,18 @@ static int ds5_mux_registered(struct v4l2_subdev *sd)
  	if (ret < 0)
  		return ret;
  
@@ -236,7 +226,7 @@ index 2156d8e..c7c56b6 100644
  
  e_depth:
  	v4l2_device_unregister_subdev(&state->depth.sensor.sd);
-@@ -2863,17 +2877,17 @@ static int ds5_v4l_init(struct i2c_client *c,struct ds5 *state)
+@@ -2864,17 +2877,17 @@ static int ds5_v4l_init(struct i2c_client *c,struct ds5 *state)
  	if (ret < 0)
  		return ret;
  
@@ -259,7 +249,7 @@ index 2156d8e..c7c56b6 100644
  
  	ret = ds5_hw_init(c, state);
  	if (ret < 0)
-@@ -2888,8 +2902,8 @@ e_mux:
+@@ -2889,8 +2902,8 @@ e_mux:
  	ds5_mux_remove(state);
  e_rgb:
  	media_entity_cleanup(&state->rgb.sensor.sd.entity);
@@ -270,7 +260,7 @@ index 2156d8e..c7c56b6 100644
  e_depth:
  	media_entity_cleanup(&state->depth.sensor.sd.entity);
  	return ret;
-@@ -3003,7 +3017,6 @@ static int ds5_probe(struct i2c_client *c, const struct i2c_device_id *id)
+@@ -3004,7 +3017,6 @@ static int ds5_probe(struct i2c_client *c, const struct i2c_device_id *id)
  
  
  	state->client = c;
@@ -279,7 +269,7 @@ index 2156d8e..c7c56b6 100644
  
  	state->vcc = devm_regulator_get(&c->dev, "vcc");
 diff --git a/drivers/media/platform/tegra/camera/vi/vi5_formats.h b/drivers/media/platform/tegra/camera/vi/vi5_formats.h
-index 51cbbad..7d2169e 100644
+index 51cbbad5b..7d2169ee0 100644
 --- a/drivers/media/platform/tegra/camera/vi/vi5_formats.h
 +++ b/drivers/media/platform/tegra/camera/vi/vi5_formats.h
 @@ -87,6 +87,8 @@ static const struct tegra_video_format vi5_video_formats[] = {
@@ -337,10 +327,10 @@ index 51cbbad..7d2169e 100644
  
  #endif
 diff --git a/drivers/video/tegra/camera/tegra_camera_platform.c b/drivers/video/tegra/camera/tegra_camera_platform.c
-index 81aebfb..5aaf9f9 100644
+index af2d13bd1..320d53b59 100644
 --- a/drivers/video/tegra/camera/tegra_camera_platform.c
 +++ b/drivers/video/tegra/camera/tegra_camera_platform.c
-@@ -960,6 +960,11 @@ int tegra_camera_update_clknbw(void *priv, bool stream_on)
+@@ -964,6 +964,11 @@ int tegra_camera_update_clknbw(void *priv, bool stream_on)
  	struct tegra_camera_info *info;
  	int ret = 0;
  
@@ -353,5 +343,5 @@ index 81aebfb..5aaf9f9 100644
  	if (!info)
  		return -EINVAL;
 -- 
-2.7.4
+2.17.1
 

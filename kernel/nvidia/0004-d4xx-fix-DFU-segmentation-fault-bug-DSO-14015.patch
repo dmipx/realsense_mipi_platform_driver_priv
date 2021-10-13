@@ -1,15 +1,15 @@
-From 219f1eebaec114e3f5c255642580f499d143ba8b Mon Sep 17 00:00:00 2001
-From: Nael Masalha <nael.masalha@intel.com>
-Date: Tue, 26 Nov 2019 07:55:42 +0200
+From 1bf10dcdef661b5c634a377bb48a5bb60398cd7e Mon Sep 17 00:00:00 2001
+From: Emil Jahshan <emil.jahshan@intel.com>
+Date: Thu, 7 Oct 2021 11:27:52 +0300
 Subject: [PATCH] d4xx: fix DFU segmentation fault, bug DSO-14015
 
-Signed-off-by: Nael Masalha <nael.masalha@intel.com>
+Signed-off-by: Emil Jahshan <emil.jahshan@intel.com>
 ---
  drivers/media/i2c/d4xx.c | 8 ++++----
  1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/media/i2c/d4xx.c b/drivers/media/i2c/d4xx.c
-index a1d2e30..24b9a65 100644
+index bbe41bbae..0be15633b 100644
 --- a/drivers/media/i2c/d4xx.c
 +++ b/drivers/media/i2c/d4xx.c
 @@ -2707,7 +2707,7 @@ static int ds5_dfu_detach(struct ds5 *state)
@@ -49,5 +49,5 @@ index a1d2e30..24b9a65 100644
  				ret = ds5_dfu_wait_for_get_dfu_status (state, dfuDNLOAD_IDLE);
  			}
 -- 
-2.7.4
+2.17.1
 

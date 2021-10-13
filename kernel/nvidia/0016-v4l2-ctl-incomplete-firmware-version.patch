@@ -1,6 +1,6 @@
-From 74720759671afc37b2abe3dc02e54821d094def8 Mon Sep 17 00:00:00 2001
+From f2a6f385b28181b4291868156ace805622fa1d34 Mon Sep 17 00:00:00 2001
 From: Emil Jahshan <emil.jahshan@intel.com>
-Date: Wed, 29 Sep 2021 12:41:20 +0300
+Date: Thu, 7 Oct 2021 15:12:42 +0300
 Subject: [PATCH] v4l2-ctl incomplete firmware version
 
 Signed-off-by: Emil Jahshan <emil.jahshan@intel.com>
@@ -9,7 +9,7 @@ Signed-off-by: Emil Jahshan <emil.jahshan@intel.com>
  1 file changed, 9 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/media/i2c/d4xx.c b/drivers/media/i2c/d4xx.c
-index 08437844d..48876bcc3 100644
+index fa0bf5f44..8f00d8001 100644
 --- a/drivers/media/i2c/d4xx.c
 +++ b/drivers/media/i2c/d4xx.c
 @@ -398,15 +398,20 @@ static int ds5_raw_write(struct ds5 *state, u16 reg, const void *val, size_t val
